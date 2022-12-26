@@ -1,14 +1,74 @@
-<svelte:head>
-    <title>MyCrafter.io - Main Page</title>
-</svelte:head>
-
-<a href="/" data-wowhead="item=2828">This is a Link to WoWHead</a>
-<img  src="https://wow.zamimg.com/uploads/screenshots/normal/1081120.jpg"/>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-<Button>Ein Button</Button>
-
-
 <script lang="ts">
-    import Button from "@smui/button"
+	import type { PageData } from './$types';
+	export let data: PageData;
+	$: ({ professions } = data);
 </script>
 
+<svelte:head>
+	<title>MyCrafter.io - Main Page</title>
+</svelte:head>
+
+<section class="dp01 profession-button-holder">
+	<h1>What are you looking for today?</h1>
+	<div class="profession-button-grid">
+		{#each professions as profession}
+		<div class="profession-button">
+			<a href="/professions/{profession.name}">
+				<picture>
+					<img alt={profession.name} src={profession.icon} />
+				</picture>
+			</a>
+		</div>
+	{/each}
+	</div>
+
+</section>
+
+<style>
+	.profession-button-holder{
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: fit-content;
+		padding: 1em;
+		border-radius: 2%;
+		margin-top: 1em;
+	}
+
+	.profession-button-grid{
+		width: fit-content;
+		height: fit-content;
+		display: grid;
+		grid-template-columns: auto auto auto auto;
+		grid-template-rows: auto auto;
+		grid-auto-flow: row;
+		justify-items: center;
+		column-gap: 5px;
+		row-gap: 5px;
+	}
+
+	a {
+		text-decoration: none;
+	}
+	.profession-button {
+		width: fit-content;
+		height: fit-content;
+		padding: 0.25em;
+		border-radius: 24%;
+	}
+	.profession-button:hover {
+		background-color: hsla(0, 100%, 100%, 0.05);
+		box-shadow:
+		/* offset-x | offset-y | blur-radius | spread-radius | color */ 0px 1px 1px 0px
+				hsla(0, 0%, 0%, 0.14),
+			0px 2px 1px -1px hsla(0, 0%, 0%, 0.12), 0px 1px 3px 0px hsla(0, 0%, 0%, 0.2);
+	}
+	.profession-button img {
+		display: inline-block;
+		height: 5em;
+		width: 5em;
+		border-radius: 24%;
+		border: 2px solid black;
+	}
+</style>

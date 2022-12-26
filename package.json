@@ -32,6 +32,7 @@
 		"smui-theme": "^7.0.0-beta.0",
 		"svelte": "^3.54.0",
 		"svelte-check": "^2.9.2",
+		"ts-to-zod": "^1.13.1",
 		"tslib": "^2.4.1",
 		"typescript": "^4.9.3",
 		"vite": "^4.0.0",
@@ -41,6 +42,7 @@
 	"dependencies": {
 		"@mdi/font": "^7.1.96",
 		"@mdi/js": "^7.1.96",
-		"mongodb": "^4.13.0"
+		"mongodb": "^4.13.0",
+		"zod": "^3.20.2"
 	}
 }

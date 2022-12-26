@@ -46,14 +46,12 @@
         padding-left: 8px;
         padding-right: 8px;
 		min-height: calc( 100vh - 60px );
+		display: flex;
+		justify-content: center;
 	}
 
 	footer {
 		border-top: 2px solid rgba(245, 245, 245, 0.138);
-		position: absolute;
-		bottom: 0;
-		left: 0;
 		height: 60px;
-		width: 100%;
 	}
 </style>
