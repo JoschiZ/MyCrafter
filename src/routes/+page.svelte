@@ -30,22 +30,15 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		width: fit-content;
 		padding: 1em;
 		border-radius: 2%;
 		margin-top: 1em;
 	}
 
 	.profession-button-grid{
-		width: fit-content;
-		height: fit-content;
-		display: grid;
-		grid-template-columns: auto auto auto auto;
-		grid-template-rows: auto auto;
-		grid-auto-flow: row;
-		justify-items: center;
-		column-gap: 5px;
-		row-gap: 5px;
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
 	}
 
 	a {
@@ -54,8 +47,9 @@
 	.profession-button {
 		width: fit-content;
 		height: fit-content;
-		padding: 0.25em;
+		padding: 0.5em;
 		border-radius: 24%;
+		margin: 0.25em;
 	}
 	.profession-button:hover {
 		background-color: hsla(0, 100%, 100%, 0.05);
