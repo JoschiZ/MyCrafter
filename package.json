@@ -40,6 +40,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@auth/core": "latest",
+		"@auth/sveltekit": "latest",
 		"@mdi/font": "^7.1.96",
 		"@mdi/js": "^7.1.96",
 		"mongodb": "^4.13.0",

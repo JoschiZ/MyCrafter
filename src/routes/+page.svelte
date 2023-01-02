@@ -12,20 +12,19 @@
 	<h1>What are you looking for today?</h1>
 	<div class="profession-button-grid">
 		{#each professions as profession}
-		<div class="profession-button">
-			<a href="/professions/{profession.name}">
-				<picture>
-					<img alt={profession.name} src={profession.icon} />
-				</picture>
-			</a>
-		</div>
-	{/each}
+			<div class="profession-button">
+				<a href="/professions/{profession.name}">
+					<picture>
+						<img alt={profession.name} src={profession.icon} />
+					</picture>
+				</a>
+			</div>
+		{/each}
 	</div>
-
 </section>
 
 <style>
-	.profession-button-holder{
+	.profession-button-holder {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -35,7 +34,7 @@
 		margin-top: 1em;
 	}
 
-	.profession-button-grid{
+	.profession-button-grid {
 		display: flex;
 		justify-content: center;
 		flex-wrap: wrap;

@@ -2,18 +2,28 @@
     <title>MyCrafter.io - Login - Please login with your Battle.net account.</title>
 </svelte:head>
 
-<Button on:click={LogIn}>Login with Battle.Net</Button>
-
-<p>{$IsLoggedIn}</p>
-
-<script lang="ts">
-    import Button from "@smui/button"
-	import { readable, writable } from "svelte/store";
-
-    let IsLoggedIn = writable(false)
-
-    function LogIn(){
-        IsLoggedIn.set(!$IsLoggedIn)
-    }
-
-</script>
+<script>
+    import { signIn, signOut } from "@auth/sveltekit/client"
+    import { page } from "$app/stores"
+  </script>
+  
+  <h1>SvelteKit Auth Example</h1>
+  <p>
+    {#if $page.data.session}
+      {#if $page.data.session.user?.image}
+        <span
+          style="background-image: url('{$page.data.session.user.image}')"
+          class="avatar"
+        />
+      {/if}
+      <span class="signedInText">
+        <small>Signed in as</small><br />
+        <strong>{$page.data.session.user?.name ?? "User"}</strong>
+      </span>
+      <button on:click={() => signOut()} class="button">Sign out</button>
+    {:else}
+      <span class="notSignedInText">You are not signed in</span>
+      <button on:click={() => signIn("battlenet")}>Sign In with BattleNet</button>
+      <button on:click={() => signIn("github")}>Sign In with GitHub</button>
+    {/if}
+  </p>
