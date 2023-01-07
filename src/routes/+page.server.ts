@@ -1,4 +1,4 @@
-import type { Profession } from "$db/professions/profession";
+import type { Profession } from "$db/professions/type/Profession";
 import { professions } from "$db/professions/professions";
 import type { PageServerLoad } from "./$types";
 

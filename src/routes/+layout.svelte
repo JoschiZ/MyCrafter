@@ -14,7 +14,7 @@
 			<Title>MyCrafter.io</Title>
 		</Section>
 		<Section align="end" toolbar>
-			<IconButton href="/login" class="material-icons" aria-label="Login">login</IconButton>
+			<IconButton href="/auth/signin" class="material-icons" aria-label="Login">login</IconButton>
 		</Section>
 	</Row>
 </TopAppBar>
