@@ -3,6 +3,9 @@
 	import IconButton from '@smui/icon-button';
 	import { mdiGithub } from '@mdi/js';
 	import { Icon, Svg } from '@smui/common';
+	import { page } from '$app/stores';
+
+	$: data = $page.data
 
 	let topAppBar: TopAppBar;
 </script>
@@ -13,9 +16,17 @@
 			<IconButton href="/" class="material-icons">menu</IconButton>
 			<Title>MyCrafter.io</Title>
 		</Section>
+		{#if data.session}
+		<Section align="end" toolbar>
+			<span style="margin-right: 5px; font-size: 1.2em; font-color: blue"><a href="/profile">{data.session.user?.name}</a></span>
+			<IconButton href="/auth/signout" class="material-icons" aria-label="logout">logout</IconButton>
+		</Section>
+		{:else}
 		<Section align="end" toolbar>
 			<IconButton href="/auth/signin" class="material-icons" aria-label="Login">login</IconButton>
 		</Section>
+		{/if}
+
 	</Row>
 </TopAppBar>
 <div class="content-wrapper dp01">
@@ -45,7 +56,7 @@
 	.content-wrapper {
         padding-left: 8px;
         padding-right: 8px;
-		min-height: calc( 100vh - 60px );
+		min-height: calc( 100vh - 65px );
 		display: flex;
 		justify-content: center;
 	}
