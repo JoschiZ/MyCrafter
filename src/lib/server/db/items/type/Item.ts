@@ -12,9 +12,10 @@ export type Item = {
 }
 
 export type Recipe = {
-    recipeID: number,
+    recipeID: number
     reagents?: Reagent[]
     modifiedSlots?: ModifiedSlot[]
+    name?: string
 }
 
 export type Reagent = {
