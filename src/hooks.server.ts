@@ -21,24 +21,51 @@ export const handle = SvelteKitAuth({
       clientId: BNET_TEST_ID,
       clientSecret: BNET_TEST_SECRET,
       issuer: "https://eu.battle.net/oauth",
-      authorization: {
-        params: {
-          scope: "openid wow.profile",
-          name: "battlenet-eu"
-        }
-      },
-    }) as Provider<Profile>,
-    BNet({
-      clientId: BNET_TEST_ID,
-      clientSecret: BNET_TEST_SECRET,
-      issuer: "https://eu.battle.net/oauth",
+      name: "Battlenet-EU",
       id: "battlenet-eu",
       authorization: {
         params: {
           scope: "openid wow.profile",
         }
       },
+    }) as Provider<Profile>,
+    BNet({
+      clientId: BNET_TEST_ID,
+      clientSecret: BNET_TEST_SECRET,
+      name: "Battlenet-US",
+      issuer: "https://us.battle.net/oauth",
+      id: "battlenet-us",
+      authorization: {
+        params: {
+          scope: "openid wow.profile",
+        }
+      },
+    }) as Provider<Profile>,
+    BNet({
+      clientId: BNET_TEST_ID,
+      clientSecret: BNET_TEST_SECRET,
+      name: "Battlenet-KR",
+      issuer: "https://kr.battle.net/oauth",
+      id: "battlenet-kr",
+      authorization: {
+        params: {
+          scope: "openid wow.profile",
+        }
+      },
+    }) as Provider<Profile>,
+    BNet({
+      clientId: BNET_TEST_ID,
+      clientSecret: BNET_TEST_SECRET,
+      name: "Battlenet-TW",
+      issuer: "https://tw.battle.net/oauth",
+      id: "battlenet-tw",
+      authorization: {
+        params: {
+          scope: "openid wow.profile",
+        }
+      },
     }) as Provider<Profile>],
+
   callbacks: {
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token to the token right after signin
@@ -69,7 +96,7 @@ export const handle = SvelteKitAuth({
           return token
         }
 
-        if (await users.findOne({accountID: account.providerAccountId})){
+        if (await users.findOne({ accountID: account.providerAccountId })) {
           console.log("user was known")
           return token
         }
@@ -94,7 +121,8 @@ export const handle = SvelteKitAuth({
         return token
       }
     },
-  }})
+  }
+})
 
 interface BnetProfile extends Profile {
   iss: string
