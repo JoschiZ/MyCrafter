@@ -12,7 +12,6 @@ export const load = (async (event) => {
 
     return {
         session: session,
-        token: token,
         user: user
     };
 }) satisfies PageServerLoad;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import Card from '@smui/card';
 	export let data: PageData;
 	$: ({ professions } = data);
 </script>
@@ -8,7 +9,7 @@
 	<title>MyCrafter.io - Main Page</title>
 </svelte:head>
 
-<section class="dp02 profession-button-holder">
+<Card padded>
 	<h1>What are you looking for today?</h1>
 	<div class="profession-button-grid">
 		{#each professions as profession}
@@ -19,20 +20,10 @@
 			</div>
 		{/each}
 	</div>
-</section>
+</Card>
+
 
 <style>
-	.profession-button-holder {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 1em;
-		border-radius: 5px;
-		margin-top: 1em;
-		border: solid 1px white;
-	}
-
 	.profession-button-grid {
 		display: flex;
 		justify-content: center;
