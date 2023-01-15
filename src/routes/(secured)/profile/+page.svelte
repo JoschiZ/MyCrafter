@@ -9,15 +9,6 @@
 
 	export let data: PageData;
 
-	let characters = data.user?.characters ? data.user.characters : [];
-
-	function getFirstCharacter(characters: Character[] | undefined) {
-		if (characters && characters[0]) {
-			return characters[0];
-		}
-	}
-
-	let selectedCharacter = getFirstCharacter(characters);
 
 	let importDump = '';
 </script>
@@ -28,12 +19,16 @@
 			<div style="padding: 1rem;">
 				<h2 class="mdc-typography--headline6" style="margin: 0;">Upload your crafter data!</h2>
 			</div>
-			<form>
+			<form method="POST">
+
 				<Textfield textarea bind:value={importDump}>
+					<input name="data" type="data" hidden bind:value={importDump}>
 					<HelperText slot="helper">Insert your MyCrafter addon output</HelperText>
 				</Textfield>
+				<button>Send!</button>
 			</form>
 		</Card>
+
 	</section>
 	<section style="justify-self: start;">
 		<Card padded>
