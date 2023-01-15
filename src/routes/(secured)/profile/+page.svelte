@@ -21,10 +21,8 @@
 
 	let importDump = '';
 </script>
+
 <div class="layout">
-	{#if !data.session}
-	<p>Pleases log in with your<a href="/auth/signin">battlenet account </a></p>
-{:else}
 	<section style="justify-self: end;">
 		<Card padded>
 			<div style="padding: 1rem;">
@@ -61,15 +59,10 @@
 			</form>
 		</Card>
 	</section>
-
-	
-{/if}
 </div>
 
-
 <style>
-
-	* :global(.mdc-text-field__resizer){
+	* :global(.mdc-text-field__resizer) {
 		height: 300px;
 	}
 
@@ -87,9 +80,9 @@
 		display: grid;
 		grid-template-columns: 50% 50%;
 		grid-template-rows: 50% 50%;
-		grid-template-areas: 
-		"upload settings"
-		"stats stats";
+		grid-template-areas:
+			'upload settings'
+			'stats stats';
 		column-gap: 20px;
 		row-gap: 20px;
 		justify-items: center;
@@ -98,7 +91,6 @@
 	section {
 		min-width: 50%;
 	}
-
 
 	.bottom {
 		grid-column: 1 / span 2;
