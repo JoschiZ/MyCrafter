@@ -73,57 +73,53 @@
 	let itemText = '';
 </script>
 
-<div>
-	<TopAppBar bind:this={topAppBar} variant="standard">
-		<Row>
-			<Section align="start">
-				<IconButton href="/" class="material-icons">menu</IconButton>
-				<Title>MyCrafter.io</Title>
-			</Section>
-			<Section style="justify-content: center;">
-				<Card style="padding-left: 10px; padding-right: 10px;" class="search-bar">
-					<div>
-						<Autocomplete
-							search={searchItems}
-							bind:value
-							showMenuWithNoInput={false}
-							bind:text={itemText}
-							class="search-autocomplete"
-							getOptionLabel={(option) => (option ? `${option.name}` : '')}
-							on:keydown={onSearchKeyDown}
+<TopAppBar style="position:unset" variant="standard">
+	<Row>
+		<Section align="start">
+			<IconButton href="/" class="material-icons">menu</IconButton>
+			<Title>MyCrafter.io</Title>
+		</Section>
+		<Section style="justify-content: center;">
+			<Card style="padding-left: 10px; padding-right: 10px;" class="search-bar">
+				<div>
+					<Autocomplete
+						search={searchItems}
+						bind:value
+						showMenuWithNoInput={false}
+						bind:text={itemText}
+						class="search-autocomplete"
+						getOptionLabel={(option) => (option ? `${option.name}` : '')}
+						on:keydown={onSearchKeyDown}
+					>
+						<Text
+							slot="loading"
+							style="display: flex; width: 100%; justify-content: center; align-items: center;"
+							class="search-text"
 						>
-							<Text
-								slot="loading"
-								style="display: flex; width: 100%; justify-content: center; align-items: center;"
-								class="search-text"
-							>
-								<CircularProgress style="height: 24px; width: 24px;" indeterminate />
-							</Text>
-						</Autocomplete>
-					</div>
-				</Card>
+							<CircularProgress style="height: 24px; width: 24px;" indeterminate />
+						</Text>
+					</Autocomplete>
+				</div>
+			</Card>
+		</Section>
+		{#if data.session}
+			<Section align="end" toolbar>
+				<Title style="margin-right: 5px; font-size: 1.2em; font-color: blue"
+					><a href="/profile">{data.session.user?.name}</a></Title
+				>
+				<IconButton href="/auth/signout" class="material-icons" aria-label="logout"
+					>logout</IconButton
+				>
 			</Section>
-			{#if data.session}
-				<Section align="end" toolbar>
-					<Title style="margin-right: 5px; font-size: 1.2em; font-color: blue"
-						><a href="/profile">{data.session.user?.name}</a></Title
-					>
-					<IconButton href="/auth/signout" class="material-icons" aria-label="logout"
-						>logout</IconButton
-					>
-				</Section>
-			{:else}
-				<Section align="end" toolbar>
-					<IconButton href="/login" class="material-icons" aria-label="Login">login</IconButton>
-				</Section>
-			{/if}
-		</Row>
-	</TopAppBar>
-</div>
+		{:else}
+			<Section align="end" toolbar>
+				<IconButton href="/login" class="material-icons" aria-label="Login">login</IconButton>
+			</Section>
+		{/if}
+	</Row>
+</TopAppBar>
 <div class="content-wrapper dp01">
-	<AutoAdjust {topAppBar} style="width:100%">
 		<slot />
-	</AutoAdjust>
 </div>
 <footer>
 	<IconButton aria-label="GitHub" href="https://github.com/JoschiGrey/MyCrafter">
@@ -173,9 +169,9 @@
 	.content-wrapper {
 		padding-left: 8px;
 		padding-right: 8px;
-		min-height: calc(100vh - 65px);
-		display: flex;
-		justify-content: center;
+		min-height: calc(100vh - 65px - 80px - 20px);
+		padding-top: 20px;
+		padding-bottom: 20px;
 	}
 
 	footer {
