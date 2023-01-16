@@ -23,11 +23,26 @@ export type Realm = {
 
 export type CharacterProfession = {
     name: string
-    id: number
-    recipes: UserRecipe[]
+    skillLineID: number //The ID of the dragonflight skillline
+    recipes?: UserRecipe[]
+    progress?: ProfessionProgress
 }
 
 export type UserRecipe = {
     recipeID: number
     name: string
+}
+
+export type ProfessionProgress = {
+    /**
+     * @maximum 100
+     */
+    skill: number
+    skillModifier: number
+    pathNodes: PathNode[]
+}
+
+export type PathNode = {
+    pathID: number
+    currentRank: number
 }

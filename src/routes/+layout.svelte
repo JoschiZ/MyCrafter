@@ -1,14 +1,18 @@
 <script lang="ts">
-	import TopAppBar, { Row, Section, Title, AutoAdjust } from '@smui/top-app-bar';
-	import IconButton from '@smui/icon-button';
-	import { mdiGithub } from '@mdi/js';
-	import { Icon, Svg } from '@smui/common';
-	import { page } from '$app/stores';
-	import Autocomplete from '@smui-extra/autocomplete';
-	import CircularProgress from '@smui/circular-progress';
-	import Card from '@smui/card';
-	import { Text } from '@smui/list';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { mdiGithub } from '@mdi/js';
+	import Autocomplete from '@smui-extra/autocomplete';
+	import Card from '@smui/card';
+	import CircularProgress from '@smui/circular-progress';
+	import { Icon, Label, Svg } from '@smui/common';
+	import IconButton from '@smui/icon-button';
+	import { Text } from '@smui/list';
+	import Snackbar, { Actions } from '@smui/snackbar';
+	import TopAppBar, { Row, Section, Title } from '@smui/top-app-bar';
+	import snackbars from '$lib/stores/snackbars';
+	import { onMount } from 'svelte';
+
 	$: data = $page.data;
 
 	let topAppBar: TopAppBar;
@@ -71,6 +75,20 @@
 	}
 
 	let itemText = '';
+
+	let snackbarSuccess: Snackbar | undefined
+	let snackbarError: Snackbar | undefined
+	let snackbarWarning: Snackbar | undefined
+
+	onMount(async () => {
+		snackbars.set(
+			{
+				success: snackbarSuccess,
+				warning: snackbarWarning,
+				error: snackbarError
+			}
+		)
+	})
 </script>
 
 <TopAppBar style="position:unset" variant="standard">
@@ -128,6 +146,26 @@
 		</Icon>
 	</IconButton>
 </footer>
+<Snackbar bind:this={snackbarSuccess} class="demo-success">
+	<Label/>
+	<Actions>
+	  <IconButton class="material-icons" title="Dismiss">close</IconButton>
+	</Actions>
+  </Snackbar>
+   
+  <Snackbar bind:this={snackbarWarning} class="demo-warning">
+	<Label/>
+	<Actions>
+	  <IconButton class="material-icons" title="Dismiss">close</IconButton>
+	</Actions>
+  </Snackbar>
+   
+  <Snackbar bind:this={snackbarError} class="demo-error">
+	<Label/>
+	<Actions>
+	  <IconButton class="material-icons" title="Dismiss">close</IconButton>
+	</Actions>
+  </Snackbar>
 
 <style>
 	* :global(.search-autocomplete input) {

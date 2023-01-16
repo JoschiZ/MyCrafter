@@ -1,16 +1,14 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import Select, { Option } from '@smui/select';
-	import type { Character } from '$db/user/type/User';
 	import Textfield from '@smui/textfield';
 	import HelperText from '@smui/textfield/helper-text';
 	import Card from '@smui/card';
-	import { Label } from '@smui/common';
-
-	export let data: PageData;
-
+	import { applyAction, enhance } from '$app/forms';
+	import snackbars from '$lib/stores/snackbars';
+	import { openSnackbar } from '$lib/util/openSnackbar';
 
 	let importDump = '';
+
+	const localSnackbars = $snackbars;
 </script>
 
 <div class="layout">
@@ -19,16 +17,33 @@
 			<div style="padding: 1rem;">
 				<h2 class="mdc-typography--headline6" style="margin: 0;">Upload your crafter data!</h2>
 			</div>
-			<form method="POST">
+			<form
+				use:enhance={() => {
+					return async ({ result }) => {
+						console.log(result)
+						if (result.type === 'failure') {
 
+							if(result.data?.message){
+								openSnackbar($snackbars.error, result.data.message)
+							}
+							else{
+								openSnackbar($snackbars.error, "Unknown Error")
+							}
+
+							await applyAction(result);
+						}
+					};
+				}}
+				method="POST"
+			>
+				<input hidden name="profession-json" bind:value={importDump} />
 				<Textfield textarea bind:value={importDump}>
-					<input name="data" type="data" hidden bind:value={importDump}>
+					<input name="data" type="data" hidden bind:value={importDump} />
 					<HelperText slot="helper">Insert your MyCrafter addon output</HelperText>
 				</Textfield>
 				<button>Send!</button>
 			</form>
 		</Card>
-
 	</section>
 	<section style="justify-self: start;">
 		<Card padded>

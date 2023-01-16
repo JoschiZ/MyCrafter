@@ -12,10 +12,22 @@ export const userRecipeSchema = z.object({
 	name: z.string()
 });
 
+export const pathNodeSchema = z.object({
+	pathID: z.number(),
+	currentRank: z.number()
+});
+
+export const professionProgressSchema = z.object({
+	skill: z.number().max(100),
+	skillModifier: z.number(),
+	pathNodes: z.array(pathNodeSchema)
+});
+
 export const characterProfessionSchema = z.object({
 	name: z.string(),
-	id: z.number(),
-	recipes: z.array(userRecipeSchema)
+	skillLineID: z.number(),
+	recipes: z.array(userRecipeSchema).optional(),
+	progress: professionProgressSchema.optional()
 });
 
 export const characterSchema = z.object({
@@ -28,6 +40,7 @@ export const characterSchema = z.object({
 });
 
 export const userSchema = z.object({
+	accountID: z.string(),
 	battleTag: z.string(),
 	creationDate: z.date(),
 	region: z.union([
