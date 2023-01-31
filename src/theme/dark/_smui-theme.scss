@@ -1,7 +1,7 @@
 @use 'sass:color';
 
-@use '@material/theme/color-palette';
 
+@use '@material/theme/color-palette';
 
 // Svelte Colors! (Dark Theme)
 @use '@material/theme/index' as theme with (
@@ -11,6 +11,10 @@
   $background: #000,
   $error: color-palette.$red-700
 );
+
+@use '@material/elevation/mdc-elevation';
+
+@use "../custom/snackbars.scss";
 
 html,
 body {
