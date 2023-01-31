@@ -70,7 +70,7 @@ export const handle = SvelteKitAuth({
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token to the token right after signin
 
-
+      //TODO: The session should be either automatically renewed or completely deleted after it expires
       if (profile && account) {
 
         token.accessToken = account.access_token

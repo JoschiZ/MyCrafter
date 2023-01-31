@@ -76,19 +76,17 @@
 
 	let itemText = '';
 
-	let snackbarSuccess: Snackbar | undefined
-	let snackbarError: Snackbar | undefined
-	let snackbarWarning: Snackbar | undefined
+	let snackbarSuccess: Snackbar | undefined;
+	let snackbarError: Snackbar | undefined;
+	let snackbarWarning: Snackbar | undefined;
 
 	onMount(async () => {
-		snackbars.set(
-			{
-				success: snackbarSuccess,
-				warning: snackbarWarning,
-				error: snackbarError
-			}
-		)
-	})
+		snackbars.set({
+			success: snackbarSuccess,
+			warning: snackbarWarning,
+			error: snackbarError
+		});
+	});
 </script>
 
 <TopAppBar style="position:unset" variant="standard">
@@ -137,7 +135,7 @@
 	</Row>
 </TopAppBar>
 <div class="content-wrapper dp01">
-		<slot />
+	<slot />
 </div>
 <footer>
 	<IconButton aria-label="GitHub" href="https://github.com/JoschiGrey/MyCrafter">
@@ -147,27 +145,27 @@
 	</IconButton>
 </footer>
 <Snackbar bind:this={snackbarSuccess} class="demo-success">
-	<Label/>
+	<Label />
 	<Actions>
-	  <IconButton class="material-icons" title="Dismiss">close</IconButton>
+		<IconButton class="material-icons" title="Dismiss">close</IconButton>
 	</Actions>
-  </Snackbar>
-   
-  <Snackbar bind:this={snackbarWarning} class="demo-warning">
-	<Label/>
-	<Actions>
-	  <IconButton class="material-icons" title="Dismiss">close</IconButton>
-	</Actions>
-  </Snackbar>
-   
-  <Snackbar bind:this={snackbarError} class="demo-error">
-	<Label/>
-	<Actions>
-	  <IconButton class="material-icons" title="Dismiss">close</IconButton>
-	</Actions>
-  </Snackbar>
+</Snackbar>
 
-<style>
+<Snackbar bind:this={snackbarWarning} class="demo-warning">
+	<Label />
+	<Actions>
+		<IconButton class="material-icons" title="Dismiss">close</IconButton>
+	</Actions>
+</Snackbar>
+
+<Snackbar bind:this={snackbarError} class="demo-error">
+	<Label />
+	<Actions>
+		<IconButton class="material-icons" title="Dismiss">close</IconButton>
+	</Actions>
+</Snackbar>
+
+<style lang="scss">
 	* :global(.search-autocomplete input) {
 		width: 400px;
 	}
@@ -207,7 +205,7 @@
 	.content-wrapper {
 		padding-left: 8px;
 		padding-right: 8px;
-		min-height: calc(100vh - 65px - 80px - 20px);
+		min-height: calc(100vh - 65px - 80px - 20px - 10px);
 		padding-top: 20px;
 		padding-bottom: 20px;
 	}

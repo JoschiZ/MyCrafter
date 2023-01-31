@@ -31,6 +31,7 @@ export type CharacterProfession = {
 export type UserRecipe = {
     recipeID: number
     name: string
+    commission?: number
 }
 
 export type ProfessionProgress = {
