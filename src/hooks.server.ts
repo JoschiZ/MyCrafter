@@ -70,22 +70,21 @@ export const handle = SvelteKitAuth({
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token to the token right after signin
 
-
+      //TODO: The session should be either automatically renewed or completely deleted after it expires
       if (profile && account) {
 
         token.accessToken = account.access_token
-
-        const bnetProfile = profile as BnetProfile
+        
         let region: "eu" | "us" | "kr" | "tw" | "cn" | undefined = undefined
-        if (bnetProfile.iss === "https://eu.battle.net/oauth") {
+        if (profile.iss === "https://eu.battle.net/oauth") {
           region = "eu"
-        } else if (bnetProfile.iss === "https://us.battle.net/oauth") {
+        } else if (profile.iss === "https://us.battle.net/oauth") {
           region = "us"
-        } else if (bnetProfile.iss === "https://kr.battle.net/oauth") {
+        } else if (profile.iss === "https://kr.battle.net/oauth") {
           region = "kr"
-        } else if (bnetProfile.iss === "https://tw.battle.net/oauth") {
+        } else if (profile.iss === "https://tw.battle.net/oauth") {
           region = "tw"
-        } else if (bnetProfile.iss === "https://www.battlenet.com.cn/oauth") {
+        } else if (profile.iss === "https://www.battlenet.com.cn/oauth") {
           region = "cn"
         }
 
@@ -123,7 +122,3 @@ export const handle = SvelteKitAuth({
     },
   }
 })
-
-interface BnetProfile extends Profile {
-  iss: string
-}

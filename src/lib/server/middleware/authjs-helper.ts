@@ -8,8 +8,12 @@ import type { Cookies } from '@sveltejs/kit';
 const secureCookie = dynPriEnv.NEXTAUTH_URL?.startsWith('https://') ?? !!dynPriEnv.VERCEL;
 const cookieName = secureCookie ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
 
-export async function getToken(cookies: Cookies, raw = false) {
+export async function getToken(cookies: Cookies) {
 	const token = cookies.get(cookieName);
-	if (raw) return token;
-	return await decode({ token, secret: dynPriEnv.AUTH_SECRET });
+	const decoded = await decode({ token, secret: dynPriEnv.AUTH_SECRET })
+	
+	if(decoded){
+		return decoded
+	}
 }
+

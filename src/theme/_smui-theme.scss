@@ -1,6 +1,8 @@
 @use 'sass:color';
 
+
 @use '@material/theme/color-palette';
+
 
 // Svelte Colors!
 @use '@material/theme/index' as theme with (
@@ -11,6 +13,8 @@
   $error: color-palette.$red-900
 );
 
+@use '@material/elevation/mdc-elevation';
+@use "../theme/custom/snackbars.scss";
 html,
 body {
   background-color: theme.$surface;
@@ -23,3 +27,4 @@ a {
 a:visited {
   color: color.scale(#40b3ff, $lightness: -35%);
 }
+
