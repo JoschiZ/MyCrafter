@@ -1,5 +1,5 @@
 import { env as dynPriEnv } from '$env/dynamic/private';
-import { decode, type JWT } from '@auth/core/jwt';
+import { decode } from '@auth/core/jwt';
 import type { Cookies } from '@sveltejs/kit';
 
 // FIXME: temp workarround. remove when fixed.
@@ -11,12 +11,9 @@ const cookieName = secureCookie ? '__Secure-next-auth.session-token' : 'next-aut
 export async function getToken(cookies: Cookies) {
 	const token = cookies.get(cookieName);
 	const decoded = await decode({ token, secret: dynPriEnv.AUTH_SECRET })
+	
 	if(decoded){
-		return decoded as BnetToken
+		return decoded
 	}
-}
-
-export interface BnetToken extends JWT {
-	accessToken: string
 }
 

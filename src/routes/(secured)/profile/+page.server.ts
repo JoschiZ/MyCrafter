@@ -67,7 +67,7 @@ export const actions = {
 
 
         const token = await getToken(event.cookies)
-        if (!token) {
+        if (!token || !token.accessToken) {
             return fail(400, { professions: data, message: "Please relog" })
         }
         const user = await users.findOne<User>({ accountID: token?.sub })
@@ -149,7 +149,7 @@ export const actions = {
     },
     updateProfessions: async (event) => {
         const token = await getToken(event.cookies)
-        if (!token) {
+        if (!token || !token.accessToken) {
             return fail(400, { message: "Please relog" })
         }
         const user = await users.findOne<User>({ accountID: token?.sub })
