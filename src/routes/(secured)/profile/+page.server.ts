@@ -1,8 +1,6 @@
-import type { Character, CharacterProfession, User } from '$db/user/type/User';
-import { characterProfessionSchema } from '$db/user/type/User.zod';
-import users from '$db/user/users';
+import { CharacterProfession, CharacterProfessionModel, type Character, type User } from '$db/user/UserModel';
+import UserModel from '$db/user/UserModel';
 import { getToken } from '$lib/server/middleware/authjs-helper';
-import { ZodError } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 import { getCharacters } from '$lib/server/bnetapi/getCharacters';
@@ -12,11 +10,12 @@ import { updateCharacters } from '$db/user/queries/updateCharacters';
 
 
 
+
 export const load = (async (event) => {
     const session = await event.locals.getSession()
     const token = await getToken(event.cookies)
 
-    const user = await users.findOne<User>({ accountID: token?.sub }, { projection: { _id: 0 } })
+    const user = await UserModel.findOne<User>({ accountID: token?.sub }, { projection: { _id: 0 } })
 
 
     return {
@@ -29,6 +28,7 @@ export const actions = {
     updateProgress: async (event) => {
         const formData = await event.request.formData()
         const data = formData.get("profession-json")
+
 
         if (!data) {
             return fail(400, { professions: data, message: "Please enter your Crafter.io Addon export!" })
@@ -53,12 +53,12 @@ export const actions = {
             }
 
             for (const profession of partialCharacter.professions) {
-                characterProfessionSchema.parse(profession)
+                CharacterProfessionModel.validate(profession)
                 professions.push(profession)
             }
 
         } catch (error) {
-            if (error instanceof SyntaxError || error instanceof ZodError) {
+            if (error instanceof SyntaxError) {
                 console.log(error)
                 return fail(400, { professions: data, message: "Validation of the input failed, please reexport your data" })
             }
@@ -70,7 +70,7 @@ export const actions = {
         if (!token || !token.accessToken) {
             return fail(400, { professions: data, message: "Please relog" })
         }
-        const user = await users.findOne<User>({ accountID: token?.sub })
+        const user = await UserModel.findOne<User>({ accountID: token?.sub })
 
         if (!user) {
             //TODO: Insert Update Characters Method HERE
@@ -105,7 +105,7 @@ export const actions = {
 
 
         if (!correctCharacter.professions) {
-            const update = await users.updateOne(
+            const update = await UserModel.updateOne(
                 {
                     accountID: user.accountID
                 },
@@ -125,7 +125,7 @@ export const actions = {
         }
 
         for (const profession of professions) {
-            const update = await users.updateOne(
+            const update = await UserModel.updateOne(
                 {
                     accountID: user.accountID
                 },
@@ -152,7 +152,7 @@ export const actions = {
         if (!token || !token.accessToken) {
             return fail(400, { message: "Please relog" })
         }
-        const user = await users.findOne<User>({ accountID: token?.sub })
+        const user = await UserModel.findOne<User>({ accountID: token?.sub })
         if (!user) {
             //TODO: If the user does not exist there certainly is a BIG problem
             return fail(400, { message: "Userdata Missing, try loging out and in again!" })
@@ -165,19 +165,19 @@ export const actions = {
 
         }
 
-
         let newestDoc = user.characters
         for (const character of characters) {
 
             const professions = await getProfessions(user.region, character.realm.slug, character.name, token.accessToken)
             for (const profession of professions) {
-                if (!characterProfessionSchema.safeParse(profession)) {
+                if (!(profession instanceof CharacterProfession)) {
                     console.log("3")
                     return fail(400, { message: "Could not validate profession data, provided by Blizzard. If this error persists, please report it on GitHub." })
                 }
             }
             if (!character.professions || character.professions.length == 0) {
-                const update = await users.findOneAndUpdate(
+                
+                const update = await UserModel.findOneAndUpdate(
                     {
                         accountID: user.accountID
                     },
@@ -192,7 +192,7 @@ export const actions = {
                         ],
                         returnDocument: "after"
                     }
-                )
+                ).exec()
                 if (!update.ok || !update.value) {
                     console.log("4")
                     return fail(400, { message: "Database Error. If this persists, open an issue on GitHub." })
@@ -204,7 +204,7 @@ export const actions = {
                         console.log("5")
                         continue
                     }
-                    const update = await users.findOneAndUpdate(
+                    const update = await UserModel.findOneAndUpdate(
                         {
                             accountID: user.accountID
                         },
@@ -255,7 +255,7 @@ export const actions = {
         const characterID = parseInt(characterIDString)
 
 
-        const update = await users.updateOne({
+        const update = await UserModel.updateOne({
             accountID: token?.sub
         },
             {

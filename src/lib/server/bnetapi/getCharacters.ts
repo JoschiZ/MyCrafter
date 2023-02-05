@@ -1,4 +1,4 @@
-import type { Character } from "$db/user/type/User"
+import type { Character } from "$db/user/UserModel"
 import { characterSchema } from "$db/user/type/User.zod"
 
 export async function getCharacters(region: string, accessToken: string) {

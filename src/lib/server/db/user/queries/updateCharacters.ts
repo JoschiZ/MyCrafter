@@ -1,5 +1,5 @@
-import type { Character } from "../type/User";
-import users from "../users";
+import type { Character } from "../UserModel";
+import users from "../UserModel";
 
 //TODO: This should techically also account for characters being deleted. But I guess max lvl chars being deleted is quite rare.
 export async function updateCharacters(characters: Character[], accountID: string) {

@@ -1,11 +1,8 @@
-import { MongoClient } from "mongodb"
 import { DB_URI } from '$env/static/private';
+import mongoose from "mongoose";
 
-const client = new MongoClient(DB_URI)
 
 export async function StartMongo() {
     console.log("Starting Mongo....")
-    return client.connect()
+    await mongoose.connect(DB_URI)
 }
-
-export default client.db("MyCrafter") // select database

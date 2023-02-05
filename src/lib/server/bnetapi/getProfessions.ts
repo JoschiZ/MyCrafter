@@ -1,6 +1,6 @@
 import items from "$db/items/items"
-import type { Item } from "$db/items/type/Item"
-import type { CharacterProfession, UserRecipe } from "$db/user/type/User"
+import type { Item } from "$db/items/ItemModel"
+import type { CharacterProfession, UserRecipe } from "$db/user/UserModel"
 import { MissingAuthorize } from "@auth/core/errors"
 
 const relevantItems = await items.find<Item>({}, {projection: {_id:0, "recipe.recipeID":1}}).toArray()

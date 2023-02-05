@@ -5,9 +5,9 @@ import { BNET_TEST_ID, BNET_TEST_SECRET } from "$env/static/private";
 import type { Profile } from "@auth/core/types";
 import type { Provider } from "@auth/core/providers";
 import { getCharacters } from "$lib/server/bnetapi/getCharacters";
-import type { User } from "$db/user/type/User";
-import users from "$db/user/users";
-import { userSchema } from "$db/user/type/User.zod";
+import { User } from "$db/user/UserModel";
+import UserModel from "$db/user/UserModel";
+
 
 StartMongo().then(() => {
   console.log("Mongo started")
@@ -74,7 +74,7 @@ export const handle = SvelteKitAuth({
       if (profile && account) {
 
         token.accessToken = account.access_token
-        
+
         let region: "eu" | "us" | "kr" | "tw" | "cn" | undefined = undefined
         if (profile.iss === "https://eu.battle.net/oauth") {
           region = "eu"
@@ -95,27 +95,21 @@ export const handle = SvelteKitAuth({
           return token
         }
 
-        if (await users.findOne({ accountID: account.providerAccountId })) {
+        if (await UserModel.findOne({ accountID: account.providerAccountId })) {
           console.log("user was known")
           return token
         }
 
         console.log("was new user")
         const characters = await getCharacters(region, account.access_token as string)
-        const newUser: User = {
-          accountID: account.providerAccountId,
-          battleTag: token.name as string,
-          creationDate: new Date(),
-          region: region,
-          characters: characters
-        }
+        const newUser: User = new User()
+        newUser._id = account.providerAccountId
+        newUser.battleTag = token.name as string
+        newUser.region = region
+        newUser.characters = characters
 
-        if (!userSchema.safeParse(newUser)) {
-          console.error("User could not be validated!");
-        }
 
-        await users.insertOne(newUser)
-
+        await UserModel.create(newUser)
 
         return token
       }
