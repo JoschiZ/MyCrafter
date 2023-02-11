@@ -1,5 +1,4 @@
-import type { Character } from "$db/user/UserModel"
-import { characterSchema } from "$db/user/type/User.zod"
+import type {Character} from "$db/user/UserModel"
 
 export async function getCharacters(region: string, accessToken: string) {
     const response = await fetch(`https://${region}.api.blizzard.com/profile/user/wow?namespace=profile-${region}&locale=en_US&access_token=${accessToken}`)
@@ -15,17 +14,19 @@ export async function getCharacters(region: string, accessToken: string) {
                 }
                 const character = {
                     name: rawCharacter.name,
-                    id: rawCharacter.id,
+
+                    // @ts-expect-error The _id field is just called id in the api return. Not gonna type that 
+                    _id: rawCharacter.id + "",
 
                     // The API JSON includes a key href link, that we are not interested in. Thus we explicitely assign the data.
-                    realm: { name: rawCharacter.realm.name, id: rawCharacter.realm.id, slug: rawCharacter.realm.slug },
+                    // @ts-expect-error The API JSON calls _id id. 
+                    realm: { name: rawCharacter.realm.name, _id: rawCharacter.realm.id + "", slug: rawCharacter.realm.slug },
 
                     // @ts-expect-error The API JSON is nested this in fact exist!
                     faction: rawCharacter.faction.type,
                     level: rawCharacter.level,
-                } as Character
+                } as unknown as Character
 
-                !characterSchema.parse(character)
                 allCharacters.push(character)
             }
         }

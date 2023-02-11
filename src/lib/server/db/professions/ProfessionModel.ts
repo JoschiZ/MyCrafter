@@ -1,18 +1,19 @@
 import { PathNode } from "$db/pathNodes/PathNodeModel";
-import { getModelForClass, prop } from "@typegoose/typegoose";
+import { getModelForClass, plugin, prop } from "@typegoose/typegoose";
 import type { Ref } from "@typegoose/typegoose";
+import { mongooseLeanVirtuals } from "mongoose-lean-virtuals"
 
-
+@plugin(mongooseLeanVirtuals)
 export class Profession {
     //** */
-    @prop({required: true, alias: "skillLineID"})
+    @prop({type: () => String,required: true, alias: "skillLineID"})
     _id!: string
     skillLineID!: string
 
-    @prop()
+    @prop({type: () => String,})
     icon?: string
 
-    @prop({required: true})
+    @prop({type: () => String,required: true})
     name!: string
 
     @prop({required: true, type: () => Specialisation, _id:false})
@@ -26,21 +27,16 @@ export class Specialisation {
     rootPathNode!: Ref<PathNode, PathNode["_id"]>
 
     
-    @prop({required: true})
+    @prop({type: () => String,required: true})
     name!: string
 
     
-    @prop({required: true})
+    @prop({type: () => String,required: true})
     description!: string
 
     
     @prop({required: true, ref: () => PathNode, type: () => String})
     paths!: Ref<PathNode, PathNode["_id"]>[]
 }
-
-
-
-
-
 
 export default getModelForClass(Profession)

@@ -7,12 +7,13 @@ import type { Provider } from "@auth/core/providers";
 import { getCharacters } from "$lib/server/bnetapi/getCharacters";
 import { User } from "$db/user/UserModel";
 import UserModel from "$db/user/UserModel";
+import logger from "$lib/server/logger";
 
 
 StartMongo().then(() => {
-  console.log("Mongo started")
+  logger.info("MongoDB Connected")
 }).catch((e) =>
-  console.error(e)
+  logger.error("MongoConnectioFailed!", e)
 )
 
 export const handle = SvelteKitAuth({
@@ -91,25 +92,23 @@ export const handle = SvelteKitAuth({
         token.region = region
 
         if (!region) {
-          console.error("Region was undefined on first user");
+          logger.error("User Login Failed!, Region was unknown")
           return token
         }
 
-        if (await UserModel.findOne({ accountID: account.providerAccountId })) {
-          console.log("user was known")
+
+        if (await UserModel.countDocuments({ _id: account.providerAccountId }).exec() > 0) {
+          logger.verbose("User was already present on login")
           return token
         }
 
-        console.log("was new user")
-        const characters = await getCharacters(region, account.access_token as string)
-        const newUser: User = new User()
-        newUser._id = account.providerAccountId
-        newUser.battleTag = token.name as string
-        newUser.region = region
-        newUser.characters = characters
+        if (!account.access_token) {
+          logger.warn("Could not fetch an access_token")
+          return token
+        }
+        const characters = await getCharacters(region, account.access_token)
 
-
-        await UserModel.create(newUser)
+        await UserModel.create({ _id: account.providerAccountId, battleTag: token.name, region: region, characters: characters })
 
         return token
       }

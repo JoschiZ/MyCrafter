@@ -10,7 +10,7 @@
 	import type { PageData } from './$types';
 	import Accordion, { Panel, Header, Content } from '@smui-extra/accordion';
 	import { TryParseInt } from '$lib/util/tryParse';
-	import type { Character, UserRecipe } from '$db/user/type/User';
+	import type { Character, UserRecipe } from '$db/user/UserModel';
 	import Autocomplete from '@smui-extra/autocomplete';
 	import { goto } from '$app/navigation';
 	export let data: PageData;
@@ -75,7 +75,6 @@
 								?.children[0] as HTMLElement;
 
 							const char = document.getElementById(`${character.name}`)?.children[0] as HTMLElement;
-							console.log(char.getAttribute('aria-expanded'));
 							if (char.getAttribute('aria-expanded') == 'true') {
 								setTimeout(() => char.click(), 200);
 							}
@@ -102,7 +101,6 @@
 						continue;
 					}
 
-					console.log(char.getAttribute('aria-expanded'));
 					if (char.getAttribute('aria-expanded') == 'false') {
 						setTimeout(() => char.click(), 200);
 					}
@@ -272,7 +270,7 @@
 																					name="skillLineID"
 																					value={profession.skillLineID}
 																				/>
-																				<input hidden name="characterID" value={character.id} />
+																				<input hidden name="characterID" value={character.characterID} />
 																				<Textfield
 																					type="text"
 																					bind:dirty

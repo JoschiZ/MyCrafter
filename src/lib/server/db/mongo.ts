@@ -1,8 +1,9 @@
 import { DB_URI } from '$env/static/private';
 import mongoose from "mongoose";
+import logger from '../logger';
 
 
 export async function StartMongo() {
-    console.log("Starting Mongo....")
+    logger.log("info", "Connecting to MongoDB")
     await mongoose.connect(DB_URI)
 }

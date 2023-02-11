@@ -1,4 +1,4 @@
-import { CharacterProfession, CharacterProfessionModel, type Character, type User } from '$db/user/UserModel';
+import { CharacterProfession, type Character, type User } from '$db/user/UserModel';
 import UserModel from '$db/user/UserModel';
 import { getToken } from '$lib/server/middleware/authjs-helper';
 import type { Actions, PageServerLoad } from './$types';
@@ -6,20 +6,13 @@ import { fail } from '@sveltejs/kit';
 import { getCharacters } from '$lib/server/bnetapi/getCharacters';
 import { getProfessions } from '$lib/server/bnetapi/getProfessions';
 import { updateCharacters } from '$db/user/queries/updateCharacters';
-
-
-
-
+import logger from '$lib/server/logger';
 
 export const load = (async (event) => {
-    const session = await event.locals.getSession()
     const token = await getToken(event.cookies)
-
-    const user = await UserModel.findOne<User>({ accountID: token?.sub }, { projection: { _id: 0 } })
-
+    const user = await UserModel.findById(token?.sub).lean({virtuals:true, getters:true}).exec()
 
     return {
-        session: session,
         user: user
     };
 }) satisfies PageServerLoad;
@@ -34,32 +27,23 @@ export const actions = {
             return fail(400, { professions: data, message: "Please enter your Crafter.io Addon export!" })
         }
 
-
-        const professions: CharacterProfession[] = []
         let partialCharacter: Partial<Character>
         try {
 
             //Note this is NOT a complete character. It will miss the id, realm.id, realm.slug, faction and level
             partialCharacter = JSON.parse(data.toString())
 
-
-
             if (!partialCharacter.professions) {
-                throw new SyntaxError("Import is missing a professions field")
+                return fail(400, { message: "Import has no profession" })
             }
 
-            if (!partialCharacter.realm?.id) {
+            if (!partialCharacter.realm?._id) {
                 return fail(400, { message: "Import is missing a realm id" })
-            }
-
-            for (const profession of partialCharacter.professions) {
-                CharacterProfessionModel.validate(profession)
-                professions.push(profession)
             }
 
         } catch (error) {
             if (error instanceof SyntaxError) {
-                console.log(error)
+                logger.debug("Error in updateProgress: ", error)
                 return fail(400, { professions: data, message: "Validation of the input failed, please reexport your data" })
             }
             throw error
@@ -70,7 +54,7 @@ export const actions = {
         if (!token || !token.accessToken) {
             return fail(400, { professions: data, message: "Please relog" })
         }
-        const user = await UserModel.findOne<User>({ accountID: token?.sub })
+        const user = await UserModel.findOne({ accountID: token?.sub }).lean({ virtuals: true }).exec() as User
 
         if (!user) {
             //TODO: Insert Update Characters Method HERE
@@ -81,7 +65,7 @@ export const actions = {
             if (!characters) {
                 return
             }
-            const correctCharacterIndex = characters.findIndex(character => character && character.name === partialCharacter.name && character.realm.id === partialCharacter.realm?.id)
+            const correctCharacterIndex = characters.findIndex(character => character && character.name === partialCharacter.name && character.realm._id === partialCharacter.realm?._id)
             return characters[correctCharacterIndex]
         }
 
@@ -92,7 +76,7 @@ export const actions = {
             correctCharacter = findCharacter(newCharacters, partialCharacter)
 
             if (!correctCharacter) {
-                return fail(400, { professions: data, message: "Could not find the associated character or fetch it from Blizzard. Try to log out and in again." })
+                return fail(400, { professions: data, message: "Could not find the associated character or fetch it from Blizard. Try to log out and in again." })
             }
 
             const update = await updateCharacters(newCharacters, user.accountID)
@@ -107,7 +91,7 @@ export const actions = {
         if (!correctCharacter.professions) {
             const update = await UserModel.updateOne(
                 {
-                    accountID: user.accountID
+                    _id: user.accountID
                 },
                 {
                     $set: {
@@ -116,18 +100,18 @@ export const actions = {
                 },
                 {
                     arrayFilters: [
-                        { "character.name": partialCharacter.name, "character.realm.id": partialCharacter.realm.id }]
-                })
+                        { "character.name": partialCharacter.name, "character.realm.id": partialCharacter.realm._id }]
+                }).exec()
             if (update.matchedCount <= 0) {
                 return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
             }
             return { sucess: true }
         }
 
-        for (const profession of professions) {
+        for (const profession of partialCharacter.professions) {
             const update = await UserModel.updateOne(
                 {
-                    accountID: user.accountID
+                    _id: user.accountID
                 },
                 {
                     $set: {
@@ -136,51 +120,46 @@ export const actions = {
                 },
                 {
                     arrayFilters: [
-                        { "character.name": partialCharacter.name, "character.realm.id": partialCharacter.realm.id },
+                        { "character.name": partialCharacter.name, "character.realm.id": partialCharacter.realm._id },
                         { "profession.skillLineID": profession.skillLineID }
                     ]
                 }
-            )
+            ).exec()
             if (update.matchedCount <= 0) {
                 return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
             }
         }
         return { sucess: true }
     },
+
+
     updateProfessions: async (event) => {
         const token = await getToken(event.cookies)
         if (!token || !token.accessToken) {
             return fail(400, { message: "Please relog" })
         }
-        const user = await UserModel.findOne<User>({ accountID: token?.sub })
+        let user = await UserModel.findById(token.sub).lean({ virtuals: true }).exec()
         if (!user) {
             //TODO: If the user does not exist there certainly is a BIG problem
             return fail(400, { message: "Userdata Missing, try loging out and in again!" })
         }
 
         const characters = await getCharacters(user.region, token.accessToken)
+        user = await updateCharacters(characters, user.accountID)
 
-        if (user.characters.length < characters.length) {
-            await updateCharacters(characters, user.accountID)
-
+        if (!user){
+            return fail(400, { message: "Userdata Missing, try loging out and in again!" })
         }
 
         let newestDoc = user.characters
-        for (const character of characters) {
+        for (const character of user.characters) {
 
             const professions = await getProfessions(user.region, character.realm.slug, character.name, token.accessToken)
-            for (const profession of professions) {
-                if (!(profession instanceof CharacterProfession)) {
-                    console.log("3")
-                    return fail(400, { message: "Could not validate profession data, provided by Blizzard. If this error persists, please report it on GitHub." })
-                }
-            }
-            if (!character.professions || character.professions.length == 0) {
-                
-                const update = await UserModel.findOneAndUpdate(
-                    {
-                        accountID: user.accountID
-                    },
+            
+            // If the character has no professions we can just overwrite/update that field. Way easier query
+            if (!character.professions || character.professions.length == 0) {                
+                const update = await UserModel.findByIdAndUpdate(
+                    user._id,
                     {
                         $set: {
                             "characters.$[character].professions": professions
@@ -188,26 +167,28 @@ export const actions = {
                     },
                     {
                         arrayFilters: [
-                            { "character.id": character.id }
+                            { "character._id": character._id }
                         ],
-                        returnDocument: "after"
+                        returnDocument: "after",
                     }
-                ).exec()
-                if (!update.ok || !update.value) {
-                    console.log("4")
+                ).lean({ virtuals: true, getters: true }).exec()
+
+                if (!update) {
                     return fail(400, { message: "Database Error. If this persists, open an issue on GitHub." })
                 }
-                newestDoc = update.value.characters
-            } else {
+
+
+                newestDoc = update.characters
+            }
+            else {
                 for (const profession of professions) {
                     if (!profession.recipes) {
-                        console.log("5")
                         continue
                     }
-                    const update = await UserModel.findOneAndUpdate(
-                        {
-                            accountID: user.accountID
-                        },
+                    const update = await UserModel.findByIdAndUpdate(
+
+                        user.accountID,
+
                         {
                             $set: {
                                 "characters.$[character].professions.$[profession].recipes": profession.recipes
@@ -215,26 +196,22 @@ export const actions = {
                         },
                         {
                             arrayFilters: [
-                                { "character.id": character.id },
+                                { "character._id": character._id },
                                 { "profession.skillLineID": profession.skillLineID }
                             ],
                             returnDocument: "after"
                         }
-                    )
-                    if (!update.ok || !update.value) {
-                        console.log("6")
+                    ).lean().exec()
+                    if (!update) {
                         return fail(400, { message: "Database Error. If this persists, open an issue on GitHub." })
                     }
-                    newestDoc = update.value.characters
-
-
+                    newestDoc = update.characters
                 }
             }
         }
         return { characters: newestDoc, success: true }
     },
-    
-    //TODO: PROBLEM right now each character has it's own comission for every recipe. But if you got two characters that have the same recipe, the comission should be identical.
+
     updateCommission: async (event) => {
         const token = await getToken(event.cookies)
 
@@ -255,9 +232,10 @@ export const actions = {
         const characterID = parseInt(characterIDString)
 
 
-        const update = await UserModel.updateOne({
-            accountID: token?.sub
-        },
+        const update = await UserModel.updateOne(
+            {
+                accountID: token?.sub
+            },
             {
                 $set: {
                     "characters.$[character].professions.$[profession].recipes.$[recipe].commission": commission
@@ -269,7 +247,7 @@ export const actions = {
                     { "profession.skillLineID": skillLineID },
                     { "recipe.recipeID": recipeID }
                 ]
-            })
+            }).exec()
 
         if (update.modifiedCount == 0) {
             return fail(400, { commission: commission, message: "Update Failed, no data was changed" })

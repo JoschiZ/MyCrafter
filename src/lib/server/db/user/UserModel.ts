@@ -1,50 +1,55 @@
+import { Item, Recipe } from "$db/items/ItemModel";
 import { PathNode } from "$db/pathNodes/PathNodeModel";
 import { Profession } from "$db/professions/ProfessionModel";
-import type { Ref } from "@typegoose/typegoose";
+import { plugin, PropType, type Ref } from "@typegoose/typegoose";
 import { prop, pre, getModelForClass } from "@typegoose/typegoose";
+import { mongooseLeanGetters } from "mongoose-lean-getters"
+import { mongooseLeanVirtuals } from "mongoose-lean-virtuals"
 
-
+@plugin(mongooseLeanVirtuals)
+@plugin(mongooseLeanGetters)
 @pre<User>("save", function () {
     this.updatedAt = new Date()
 })
 export class User {
-    @prop({ required: true, alias: "accountID" })
+    @prop({ type: () => String, required: true, alias: "accountID" })
     _id!: string
     accountID!: string
 
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     battleTag!: string
 
-    @prop({ default: new Date() })
+    @prop({ type: () => Date, default: new Date() })
     createdAt: Date = new Date()
 
-    @prop()
+    @prop({ type: () => Date, })
     updatedAt?: Date
 
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     region!: "eu" | "us" | "kr" | "tw" | "cn"
 
-    @prop({ required: true, type: () => Character, _id: false })
+    @prop({ required: true, type: () => [Character] }, PropType.ARRAY)
     characters!: Character[]
 }
 
 export class Character {
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     name!: string
 
-    @prop({ required: true })
+    @prop({ type: () => Realm, required: true })
     realm!: Realm
 
-    @prop({ required: true })
-    characterID!: string
+    @prop({ type: () => String, required: true, alias: "characterID" })
+    _id!: string
+    characterID: string = this._id
 
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     faction!: "HORDE" | "ALLIANCE"
 
-    @prop({ required: true })
+    @prop({ type: () => Number, required: true })
     level!: number
 
-    @prop({ type: () => CharacterProfession, _id: false })
+    @prop({ type: () => [CharacterProfession], _id: false }, PropType.ARRAY)
     professions?: CharacterProfession[]
 
     public get fullName() {
@@ -53,46 +58,50 @@ export class Character {
 }
 
 export class CharacterProfession {
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     name!: string
 
-    @prop({ ref: Profession, type: String })
+    @prop({ ref: Profession, type: () => String })
     skillLineID!: Ref<Profession, string>
 
-    @prop({ type: () => UserRecipe })
+    @prop({ type: () => [UserRecipe], _id: false }, PropType.ARRAY)
     recipes?: UserRecipe[]
 
-    @prop()
+    @prop({ type: () => ProfessionProgress, })
     progress?: ProfessionProgress
 }
 
 
 export class UserRecipe {
-    @prop({ required: true })
-    recipeID!: number
-
-    @prop({ required: true })
+    @prop({
+        type: () => String,
+        required:true,})
     name!: string
 
+    @prop({type: () => String})
+    recipeID?: string
+
     @prop({
+        type: () => Number,
         default: 1,
         min: 1
     })
-    commission!: number
+    commission: number = 1
 }
 
 export class ProfessionProgress {
-    @prop({ required: true, min: 0, max: 100 })
+    @prop({ type: () => Number, required: true, min: 0, max: 100 })
     skill!: number
 
     @prop({
+        type: () => Number,
         required: true,
         min: 0,
         max: 100
     })
     skillModifier!: number
 
-    @prop({ type: () => PathNodeProgress, _id: false })
+    @prop({ type: () => [PathNodeProgress], _id: false })
     pathNodes?: PathNodeProgress[]
 }
 
@@ -100,18 +109,19 @@ export class PathNodeProgress {
     @prop({ required: true, ref: () => PathNode, type: () => String })
     pathNode!: Ref<PathNode, PathNode["_id"]>
 
-    @prop({ required: true })
+    @prop({ type: () => Number, required: true })
     currentRank!: number
 }
 
 export class Realm {
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     name!: string
 
-    @prop({ required: true })
-    id!: string
+    @prop({ type: () => String, required: true, alias: "realmID" })
+    _id!: string
+    realmID: string = this._id
 
-    @prop({ required: true })
+    @prop({ type: () => String, required: true })
     slug!: string
 }
 
