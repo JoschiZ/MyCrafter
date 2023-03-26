@@ -1,4 +1,3 @@
-import { Item, Recipe } from "$db/items/ItemModel";
 import { PathNode } from "$db/pathNodes/PathNodeModel";
 import { Profession } from "$db/professions/ProfessionModel";
 import { plugin, PropType, type Ref } from "@typegoose/typegoose";
@@ -39,7 +38,7 @@ export class Character {
     @prop({ type: () => Realm, required: true })
     realm!: Realm
 
-    @prop({ type: () => String, required: true, alias: "characterID" })
+    @prop({ type: () => String, required: true, alias: "characterID", index:true })
     _id!: string
     characterID: string = this._id
 
@@ -86,7 +85,7 @@ export class UserRecipe {
         default: 1,
         min: 1
     })
-    commission: number = 1
+    commission = 1
 }
 
 export class ProfessionProgress {

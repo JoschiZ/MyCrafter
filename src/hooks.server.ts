@@ -5,11 +5,11 @@ import { BNET_TEST_ID, BNET_TEST_SECRET } from "$env/static/private";
 import type { Profile } from "@auth/core/types";
 import type { Provider } from "@auth/core/providers";
 import { getCharacters } from "$lib/server/bnetapi/getCharacters";
-import { User } from "$db/user/UserModel";
 import UserModel from "$db/user/UserModel";
 import logger from "$lib/server/logger";
+import { setGlobalOptions } from "@typegoose/typegoose";
 
-
+setGlobalOptions({schemaOptions: {_id: false}})
 StartMongo().then(() => {
   logger.info("MongoDB Connected")
 }).catch((e) =>

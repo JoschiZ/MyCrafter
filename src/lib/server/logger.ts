@@ -7,10 +7,9 @@ export default winston.createLogger({
         winston.format.colorize(),
         winston.format.simple()
     ),
-    defaultMeta: { service: "user-service" },
     transports: [
         new winston.transports.Console({
-            level: "info"
+            level: "debug"
         }),
         new winston.transports.File({
             level:"warn",

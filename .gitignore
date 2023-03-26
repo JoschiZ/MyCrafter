@@ -9,3 +9,7 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 /.vscode
+/.idea
+*.log
+src/lib/server/tempdata
+src/routes/test/upload
