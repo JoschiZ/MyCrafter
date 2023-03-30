@@ -5,14 +5,15 @@ import { BNET_TEST_ID, BNET_TEST_SECRET } from "$env/static/private";
 import type { Profile } from "@auth/core/types";
 import type { Provider } from "@auth/core/providers";
 import { getCharacters } from "$lib/server/bnetapi/getCharacters";
-import type { User } from "$db/user/type/User";
-import users from "$db/user/users";
-import { userSchema } from "$db/user/type/User.zod";
+import UserModel from "$db/user/UserModel";
+import logger from "$lib/server/logger";
+import { setGlobalOptions } from "@typegoose/typegoose";
 
+setGlobalOptions({schemaOptions: {_id: false}})
 StartMongo().then(() => {
-  console.log("Mongo started")
+  logger.info("MongoDB Connected")
 }).catch((e) =>
-  console.error(e)
+  logger.error("MongoConnectioFailed!", e)
 )
 
 export const handle = SvelteKitAuth({
@@ -67,6 +68,7 @@ export const handle = SvelteKitAuth({
     }) as Provider<Profile>],
 
   callbacks: {
+    //@ts-expect-error Typing is just wrong here
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token to the token right after signin
 
@@ -74,7 +76,7 @@ export const handle = SvelteKitAuth({
       if (profile && account) {
 
         token.accessToken = account.access_token
-        
+
         let region: "eu" | "us" | "kr" | "tw" | "cn" | undefined = undefined
         if (profile.iss === "https://eu.battle.net/oauth") {
           region = "eu"
@@ -91,31 +93,23 @@ export const handle = SvelteKitAuth({
         token.region = region
 
         if (!region) {
-          console.error("Region was undefined on first user");
+          logger.error("User Login Failed!, Region was unknown")
           return token
         }
 
-        if (await users.findOne({ accountID: account.providerAccountId })) {
-          console.log("user was known")
+
+        if (await UserModel.countDocuments({ _id: account.providerAccountId }).exec() > 0) {
+          logger.verbose("User was already present on login")
           return token
         }
 
-        console.log("was new user")
-        const characters = await getCharacters(region, account.access_token as string)
-        const newUser: User = {
-          accountID: account.providerAccountId,
-          battleTag: token.name as string,
-          creationDate: new Date(),
-          region: region,
-          characters: characters
+        if (!account.access_token) {
+          logger.warn("Could not fetch an access_token")
+          return token
         }
+        const characters = await getCharacters(region, account.access_token)
 
-        if (!userSchema.safeParse(newUser)) {
-          console.error("User could not be validated!");
-        }
-
-        await users.insertOne(newUser)
-
+        await UserModel.create({ _id: account.providerAccountId, battleTag: token.name, region: region, characters: characters })
 
         return token
       }

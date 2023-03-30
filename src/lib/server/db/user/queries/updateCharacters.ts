@@ -1,33 +1,59 @@
-import type { Character } from "../type/User";
-import users from "../users";
+import type { Character } from "../UserModel";
+import UserModel from "../UserModel";
 
-//TODO: This should techically also account for characters being deleted. But I guess max lvl chars being deleted is quite rare.
+/**
+ * This Method keeps the intersection and pushes new elements. Deletes old members, that aren't present in the
+ * @param characters A full list of characters
+ * @param accountID The accountID for identification
+ * @returns The updated UserDocument
+ */
 export async function updateCharacters(characters: Character[], accountID: string) {
-    const update = await users.updateOne(
-        {
-            accountID: accountID
-        },
-        [{
-            $set: {
-                characters: {
-                    $concatArrays: [
-                        "$characters",
-                        {
-                            $filter: {
-                                input: characters,
+    const update = await UserModel.findByIdAndUpdate(
+        accountID,
+        [
+            {
+                $set: {
+                    characters: {
+                        $filter: {
+                            input: "$characters",
+                            cond: {
 
-                                cond: {
-                                    $not: {
-                                        $in: ["$$this.id", "$characters.id"]
+                                $in: ["$$this._id", {
+                                    $map: {
+                                        input: characters,
+                                        as: "character",
+                                        in: "$$character._id"
+                                    }
+                                }]
+
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $set: {
+                    characters: {
+                        $concatArrays: [
+                            "$characters",
+                            {
+                                $filter: {
+                                    input: characters,
+
+                                    cond: {
+                                        $not: {
+                                            $in: ["$$this._id", "$characters._id"]
+                                        }
                                     }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
-            }
-        }]
-    )
+            },
+        ],
+        {returnDocument: "after"}
+    ).exec()
 
     return update
 }

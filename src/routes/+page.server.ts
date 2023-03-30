@@ -1,9 +1,9 @@
-import type { Profession } from "$db/professions/type/Profession";
-import { professions } from "$db/professions/professions";
+import ProfessionModel, { Profession } from "$db/professions/ProfessionModel";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async function(){
-    const data = await professions.find<Profession>({}, {projection:{name:1, icon:1, _id:0}}).toArray()
+    const data = await ProfessionModel.find<Profession>({}, {name:1, icon:1, _id:0}).lean().exec()
+
 
     return {
         professions: data

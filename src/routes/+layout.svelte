@@ -15,9 +15,10 @@
 
 	$: data = $page.data;
 
-	let topAppBar: TopAppBar;
-
 	async function getData(name: string) {
+		if (name.length < 3) {
+			return '';
+		}
 		const response = await fetch(`/api/items?name=${name}`, {
 			method: 'GET'
 		});
@@ -67,7 +68,7 @@
 		return Array.from(items).filter((item) => item.name.includes(input));
 	}
 
-	function onSearchKeyDown(e: CustomEvent<any>) {
+	function onSearchKeyDown(e: CustomEvent) {
 		//@ts-expect-error Bad typing in SMUI
 		if (e.keyCode === 13) {
 			goto(`/items/${itemText}`);
@@ -203,11 +204,8 @@
 	}
 
 	.content-wrapper {
-		padding-left: 8px;
-		padding-right: 8px;
 		min-height: calc(100vh - 65px - 80px - 20px - 10px);
-		padding-top: 20px;
-		padding-bottom: 20px;
+		padding: 20px 8px;
 	}
 
 	footer {

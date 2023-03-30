@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import Card from '@smui/card';
 	export let data: PageData;
+
 	$: ({ professions } = data);
 </script>
 
@@ -44,11 +45,11 @@
 
 	.profession-button:hover {
 		background-color: hsla(0, 100%, 100%, 0.05);
-	box-shadow:
-		/* offset-x | offset-y | blur-radius | spread-radius | color */
-		0px 1px 1px 0px hsla(0,0%,0%,0.14), 
-		0px 2px 1px -1px hsla(0,0%,0%,0.12), 
-		0px 1px 3px 0px hsla(0,0%,0%,0.2);
+		box-shadow:
+			/* offset-x | offset-y | blur-radius | spread-radius | color */
+			0px 1px 1px 0px hsla(0,0%,0%,0.14), 
+			0px 2px 1px -1px hsla(0,0%,0%,0.12), 
+			0px 1px 3px 0px hsla(0,0%,0%,0.2);
 	}
 
 	.profession-button img {
