@@ -1,4 +1,4 @@
-import { CharacterProfession, type Character, type User } from '$db/user/UserModel';
+import type { Character, User } from '$db/user/UserModel';
 import UserModel from '$db/user/UserModel';
 import { getToken } from '$lib/server/middleware/authjs-helper';
 import type { Actions, PageServerLoad } from './$types';
@@ -81,7 +81,7 @@ export const actions = {
 
             const update = await updateCharacters(newCharacters, user.accountID)
 
-            if (update.matchedCount <= 0) {
+            if (!update) {
                 return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
             }
         }
@@ -155,6 +155,7 @@ export const actions = {
         for (const character of user.characters) {
 
             const professions = await getProfessions(user.region, character.realm.slug, character.name, token.accessToken)
+            console.log(professions);
             
             // If the character has no professions we can just overwrite/update that field. Way easier query
             if (!character.professions || character.professions.length == 0) {                
@@ -218,23 +219,21 @@ export const actions = {
         const formData = await event.request.formData()
 
         const commissionString = formData.get("commission")?.toString()
-        const recipeIDString = formData.get("recipeID")?.toString()
-        const skillLineIDString = formData.get("skillLineID")?.toString()
-        const characterIDString = formData.get("characterID")?.toString()
+        const recipeID = formData.get("recipeID")?.toString()
+        const skillLineID = formData.get("skillLineID")?.toString()
+        const characterID = formData.get("characterID")?.toString()
 
-        if (!commissionString || !recipeIDString || !skillLineIDString || !characterIDString) {
+        if (!commissionString || !recipeID || !skillLineID || !characterID) {
             return fail(400, { commission: commissionString, message: "UpdateError, please try again!" })
         }
 
         const commission = parseInt(commissionString)
-        const recipeID = parseInt(recipeIDString)
-        const skillLineID = parseInt(skillLineIDString)
-        const characterID = parseInt(characterIDString)
+
 
 
         const update = await UserModel.updateOne(
             {
-                accountID: token?.sub
+                _id: token?.sub
             },
             {
                 $set: {
@@ -243,13 +242,13 @@ export const actions = {
             },
             {
                 arrayFilters: [
-                    { "character.id": characterID },
+                    { "character._id": characterID },
                     { "profession.skillLineID": skillLineID },
                     { "recipe.recipeID": recipeID }
                 ]
             }).exec()
-
         if (update.modifiedCount == 0) {
+            logger.warn("updateCommission failed")
             return fail(400, { commission: commission, message: "Update Failed, no data was changed" })
         }
 

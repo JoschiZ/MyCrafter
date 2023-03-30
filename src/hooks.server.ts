@@ -68,6 +68,7 @@ export const handle = SvelteKitAuth({
     }) as Provider<Profile>],
 
   callbacks: {
+    //@ts-expect-error Typing is just wrong here
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token to the token right after signin
 

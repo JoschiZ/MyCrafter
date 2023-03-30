@@ -15,10 +15,9 @@
 
 	$: data = $page.data;
 
-
 	async function getData(name: string) {
-		if(name.length < 3){
-			return ""
+		if (name.length < 3) {
+			return '';
 		}
 		const response = await fetch(`/api/items?name=${name}`, {
 			method: 'GET'
@@ -142,7 +141,7 @@
 <footer>
 	<IconButton aria-label="GitHub" href="https://github.com/JoschiGrey/MyCrafter">
 		<Icon component={Svg} viewBox="0 0 24 24">
-			<path fill="currentColor" d={mdiGithub}></path>
+			<path fill="currentColor" d={mdiGithub} />
 		</Icon>
 	</IconButton>
 </footer>

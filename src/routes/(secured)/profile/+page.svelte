@@ -13,6 +13,7 @@
 	import type { Character, UserRecipe } from '$db/user/UserModel';
 	import Autocomplete from '@smui-extra/autocomplete';
 	import { goto } from '$app/navigation';
+	import GoldDisplay from '$lib/components/GoldDisplay.svelte';
 	export let data: PageData;
 	let importDump = '';
 	const localSnackbars = $snackbars;
@@ -193,11 +194,11 @@
 																>
 																	<Header>{recipe.name}</Header>
 																	<Content>
-																		<div style="border:1px white solid; padding: 4px">
+																		<div >
 																			<p>
-																				Comission: {recipe.commission
-																					? recipe.commission
-																					: 'Not specified'}
+																				{#if recipe.commission}
+																					Commission: <GoldDisplay amount={recipe.commission}/>
+																				{/if}
 																			</p>
 																			<form
 																				method="post"

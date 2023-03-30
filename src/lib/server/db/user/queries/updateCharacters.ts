@@ -50,8 +50,9 @@ export async function updateCharacters(characters: Character[], accountID: strin
                         ]
                     }
                 }
-            }
-        ]
+            },
+        ],
+        {returnDocument: "after"}
     ).exec()
 
     return update

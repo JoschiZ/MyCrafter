@@ -1,21 +1,24 @@
-import { CraftedItemModel, type Item } from "$db/items/ItemModel"
+import { CraftedItemModel} from "$db/items/ItemModel"
 import { UserRecipe, type CharacterProfession } from "$db/user/UserModel"
 import { MissingAuthorize } from "@auth/core/errors"
 
 
 export async function getProfessions(region: string, realmSlug: string, character: string, accessToken: string) {    
     const relevantItems = await CraftedItemModel.find({}, {_id: 1, "recipe._id":1}).lean({virtuals:true}).exec()
+    
     const relevantItemsMap = new Map()
     for (const item of relevantItems) {
         relevantItemsMap.set(item.recipe.recipeID, true)
     }
 
-
+    console.log(relevantItemsMap);
+    
     character = character.toLowerCase()
     const response = await fetch(`https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${character}/professions?namespace=profile-${region}&locale=en_US&access_token=${accessToken}`)
     if (!response.ok)
         throw new MissingAuthorize()
     const json = await response.json() as APIProfessionResponse
+
     const professions: CharacterProfession[] = []
 
     for (const primary of json.primaries) {
@@ -33,7 +36,11 @@ export async function getProfessions(region: string, realmSlug: string, characte
             }
 
             for (const rawRecipe of tier.known_recipes) {
-                if (!relevantItemsMap.has(rawRecipe.id)) {
+                console.log(rawRecipe.id);
+                
+                if (!relevantItemsMap.has(rawRecipe.id + "")) {
+                    console.log("skipped");
+                    
                     continue
                 }
                 const recipe = new UserRecipe()
@@ -44,7 +51,6 @@ export async function getProfessions(region: string, realmSlug: string, characte
                 recepies.push(recipe)
             }
         }
-
         const characterProfession: CharacterProfession = {
             name: primary.profession.name,
             skillLineID: skillLineID + "",
