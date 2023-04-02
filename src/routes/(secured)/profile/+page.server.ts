@@ -5,12 +5,12 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 import { getCharacters } from '$lib/server/bnetapi/getCharacters';
 import { getProfessions } from '$lib/server/bnetapi/getProfessions';
-import { updateCharacters } from '$db/user/queries/updateCharacters';
+import { updateCharacters, updateCharactersInUserDoc } from '$db/user/queries/updateCharacters';
 import logger from '$lib/server/logger';
 
 export const load = (async (event) => {
     const token = await getToken(event.cookies)
-    const user = await UserModel.findById(token?.sub).lean({virtuals:true, getters:true}).exec()
+    const user = await UserModel.findById(token?.sub).lean({ virtuals: true, getters: true }).exec()
 
     return {
         user: user
@@ -18,6 +18,7 @@ export const load = (async (event) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
+    //TODO: Test the rework of this Method. Does everything save correctlky?
     updateProgress: async (event) => {
         const formData = await event.request.formData()
         const data = formData.get("profession-json")
@@ -54,80 +55,67 @@ export const actions = {
         if (!token || !token.accessToken) {
             return fail(400, { professions: data, message: "Please relog" })
         }
-        const user = await UserModel.findOne({ accountID: token?.sub }).lean({ virtuals: true }).exec() as User
+        let user = await UserModel.findOne({ accountID: token?.sub }).exec()
 
         if (!user) {
             //TODO: Insert Update Characters Method HERE
             return fail(400, { professions: data, message: "Userdata Missing, try loging out and in again!" })
         }
 
-        function findCharacter(characters: Partial<Character[]>, partialCharacter: Partial<Character>): Character | undefined {
-            if (!characters) {
-                return
-            }
+        function findCharacter(characters: Character[], partialCharacter: Partial<Character>): number {
+
             const correctCharacterIndex = characters.findIndex(character => character && character.name === partialCharacter.name && character.realm._id === partialCharacter.realm?._id)
-            return characters[correctCharacterIndex]
+            return correctCharacterIndex
         }
 
-        let correctCharacter = findCharacter(user.characters, partialCharacter)
+        let correctCharacterIndex = findCharacter(user.characters, partialCharacter)
 
-        if (!correctCharacter) {
+
+        // If there was no character that matched the uploaded partial character update the characters of the user.
+        if (correctCharacterIndex == -1) {
             const newCharacters = await getCharacters(user.region, token.accessToken)
-            correctCharacter = findCharacter(newCharacters, partialCharacter)
+            correctCharacterIndex = findCharacter(newCharacters, partialCharacter)
 
-            if (!correctCharacter) {
+
+            if (correctCharacterIndex == -1) {
                 return fail(400, { professions: data, message: "Could not find the associated character or fetch it from Blizard. Try to log out and in again." })
             }
 
-            const update = await updateCharacters(newCharacters, user.accountID)
-
-            if (!update) {
-                return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
-            }
+            user = updateCharactersInUserDoc(newCharacters, user)
         }
 
-
-
-        if (!correctCharacter.professions) {
-            const update = await UserModel.updateOne(
-                {
-                    _id: user.accountID
-                },
-                {
-                    $set: {
-                        "characters.$[character].professions": partialCharacter.professions
-                    }
-                },
-                {
-                    arrayFilters: [
-                        { "character.name": partialCharacter.name, "character.realm.id": partialCharacter.realm._id }]
-                }).exec()
-            if (update.matchedCount <= 0) {
+        if (!user.characters[correctCharacterIndex].professions) {
+            user.characters[correctCharacterIndex].professions = partialCharacter.professions
+            const saved = await user.save()
+            if (saved != user) {
                 return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
             }
             return { sucess: true }
         }
 
+        correctCharacterIndex = findCharacter(user.characters, partialCharacter)
+        if (correctCharacterIndex == -1){
+            return fail(400, {professions: data, message: "Could not identify the correct character to update"})
+        }
         for (const profession of partialCharacter.professions) {
-            const update = await UserModel.updateOne(
-                {
-                    _id: user.accountID
-                },
-                {
-                    $set: {
-                        "characters.$[character].professions.$[profession].progress": profession.progress
-                    }
-                },
-                {
-                    arrayFilters: [
-                        { "character.name": partialCharacter.name, "character.realm.id": partialCharacter.realm._id },
-                        { "profession.skillLineID": profession.skillLineID }
-                    ]
-                }
-            ).exec()
-            if (update.matchedCount <= 0) {
-                return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
+            const char = user.characters[correctCharacterIndex]
+            if (char.professions == undefined){
+                return fail(400, {professions: data, message: "Could not identify the correct character to update"})
             }
+            const charProfessionIndex = char.professions?.findIndex((prof) => {
+                prof == profession.skillLineID
+            })
+            if (charProfessionIndex == -1){
+                continue
+            }
+
+            const charProfession = char.professions[charProfessionIndex]
+            charProfession.progress = profession.progress
+        }
+
+        const saved = await user.save()
+        if (saved != user) {
+            return fail(400, { professions: data, message: "Database Error. If this persists, open an issue on GitHub, that contains your import string" })
         }
         return { sucess: true }
     },
@@ -147,7 +135,7 @@ export const actions = {
         const characters = await getCharacters(user.region, token.accessToken)
         user = await updateCharacters(characters, user.accountID)
 
-        if (!user){
+        if (!user) {
             return fail(400, { message: "Userdata Missing, try loging out and in again!" })
         }
 
@@ -156,9 +144,9 @@ export const actions = {
 
             const professions = await getProfessions(user.region, character.realm.slug, character.name, token.accessToken)
             console.log(professions);
-            
+
             // If the character has no professions we can just overwrite/update that field. Way easier query
-            if (!character.professions || character.professions.length == 0) {                
+            if (!character.professions || character.professions.length == 0) {
                 const update = await UserModel.findByIdAndUpdate(
                     user._id,
                     {

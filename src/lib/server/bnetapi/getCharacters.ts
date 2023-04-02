@@ -2,7 +2,7 @@ import type {Character} from "$db/user/UserModel"
 
 export async function getCharacters(region: string, accessToken: string) {
     const response = await fetch(`https://${region}.api.blizzard.com/profile/user/wow?namespace=profile-${region}&locale=en_US&access_token=${accessToken}`)
-    const allCharacters: Character[] = []
+    const allCharacters = []
     if (response.ok) {
         const accountSummary = await response.json() as ProfileSummary
 
@@ -12,7 +12,7 @@ export async function getCharacters(region: string, accessToken: string) {
                 if (rawCharacter.level < 61) {
                     continue
                 }
-                const character = {
+                const character: Character = {
                     name: rawCharacter.name,
 
                     // @ts-expect-error The _id field is just called id in the api return. Not gonna type that 
@@ -25,7 +25,7 @@ export async function getCharacters(region: string, accessToken: string) {
                     // @ts-expect-error The API JSON is nested this in fact exist!
                     faction: rawCharacter.faction.type,
                     level: rawCharacter.level,
-                } as unknown as Character
+                }
 
                 allCharacters.push(character)
             }
