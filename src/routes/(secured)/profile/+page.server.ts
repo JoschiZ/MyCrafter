@@ -55,7 +55,7 @@ export const actions = {
         if (!token || !token.accessToken) {
             return fail(400, { professions: data, message: "Please relog" })
         }
-        let user = await UserModel.findOne({ accountID: token?.sub }).exec()
+        let user = await UserModel.findById(token.sub).exec()
 
         if (!user) {
             //TODO: Insert Update Characters Method HERE
@@ -63,7 +63,6 @@ export const actions = {
         }
 
         function findCharacter(characters: Character[], partialCharacter: Partial<Character>): number {
-
             const correctCharacterIndex = characters.findIndex(character => character && character.name === partialCharacter.name && character.realm._id === partialCharacter.realm?._id)
             return correctCharacterIndex
         }
@@ -97,15 +96,16 @@ export const actions = {
         if (correctCharacterIndex == -1){
             return fail(400, {professions: data, message: "Could not identify the correct character to update"})
         }
+        console.log(user.characters[correctCharacterIndex])
         for (const profession of partialCharacter.professions) {
             const char = user.characters[correctCharacterIndex]
             if (char.professions == undefined){
                 return fail(400, {professions: data, message: "Could not identify the correct character to update"})
             }
             const charProfessionIndex = char.professions?.findIndex((prof) => {
-                prof == profession.skillLineID
+                return prof.skillLineID == profession.skillLineID
             })
-            if (charProfessionIndex == -1){
+            if (charProfessionIndex === -1){
                 continue
             }
 

@@ -66,8 +66,8 @@ export class CharacterProfession {
     @prop({ type: () => [UserRecipe], _id: false }, PropType.ARRAY)
     recipes?: UserRecipe[]
 
-    @prop({ type: () => ProfessionProgress, })
-    progress?: ProfessionProgress
+    @prop({ type: () => [ProfessionProgress], }, PropType.ARRAY)
+    progress?: ProfessionProgress[]
 }
 
 
@@ -100,7 +100,7 @@ export class ProfessionProgress {
     })
     skillModifier!: number
 
-    @prop({ type: () => [PathNodeProgress], _id: false })
+    @prop({ type: () => [PathNodeProgress], _id: false }, PropType.ARRAY)
     pathNodes?: PathNodeProgress[]
 }
 

@@ -134,6 +134,12 @@
 							const message = result.data?.message ? result.data.message : 'Unknown Error';
 							openSnackbar($snackbars.error, message);
 							await applyAction(result);
+						} else if (result.type === 'success') {
+							const message = result.data?.message ? result.data.message : 'Update Succeeded';
+
+							openSnackbar($snackbars.success, message);
+
+							await applyAction(result);
 						}
 					};
 				}}
@@ -194,10 +200,10 @@
 																>
 																	<Header>{recipe.name}</Header>
 																	<Content>
-																		<div >
+																		<div>
 																			<p>
 																				{#if recipe.commission}
-																					Commission: <GoldDisplay amount={recipe.commission}/>
+																					Commission: <GoldDisplay amount={recipe.commission} />
 																				{/if}
 																			</p>
 																			<form
@@ -271,7 +277,11 @@
 																					name="skillLineID"
 																					value={profession.skillLineID}
 																				/>
-																				<input hidden name="characterID" value={character.characterID} />
+																				<input
+																					hidden
+																					name="characterID"
+																					value={character.characterID}
+																				/>
 																				<Textfield
 																					type="text"
 																					bind:dirty
