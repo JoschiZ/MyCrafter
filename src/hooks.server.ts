@@ -7,6 +7,9 @@ import type { Provider } from "@auth/core/providers";
 import { getCharacters } from "$lib/server/bnetapi/getCharacters";
 import UserModel from "$db/user/UserModel";
 import logger from "$lib/server/logger";
+import { sequence } from "@sveltejs/kit/hooks";
+import { redirect, type Handle } from "@sveltejs/kit";
+import { authenticateUser } from "$lib/util/authenticateUser";
 
 
 StartMongo().then(() => {
@@ -15,7 +18,8 @@ StartMongo().then(() => {
   logger.error("MongoConnectioFailed!", e)
 )
 
-export const handle = SvelteKitAuth({
+
+const SKAuth = SvelteKitAuth({
   providers: [
     BNet({
       clientId: BNET_TEST_ID,
@@ -115,3 +119,17 @@ export const handle = SvelteKitAuth({
     },
   }
 })
+
+const Authentication: Handle = async ({event, resolve}) => {
+  event.locals.user = await authenticateUser(event)
+
+  if (event.route.id?.includes("(secured)") && event.locals.user == null){
+    throw redirect(301, "/login")
+  }
+
+  const response = await resolve(event)
+
+  return response
+} 
+
+export const handle = sequence(SKAuth, Authentication)
