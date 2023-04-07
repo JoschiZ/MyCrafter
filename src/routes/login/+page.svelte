@@ -3,7 +3,6 @@
 	import { signIn } from '@auth/sveltekit/client';
 
 	import Card, { Media, Actions } from '@smui/card';
-	import { goto } from '$app/navigation';
 </script>
 
 <svelte:head>

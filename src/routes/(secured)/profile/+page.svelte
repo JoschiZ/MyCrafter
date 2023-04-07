@@ -3,7 +3,7 @@
 	import Icon from '@smui/textfield/icon';
 	import HelperText from '@smui/textfield/helper-text';
 	import Card from '@smui/card';
-	import { applyAction, enhance } from '$app/forms';
+	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import snackbars from '$lib/stores/snackbars';
 	import { openSnackbar } from '$lib/util/openSnackbar';
 	import Button, { Label } from '@smui/button';
@@ -17,14 +17,11 @@
 	import { signOut } from '@auth/sveltekit/client';
 	export let data: PageData;
 	let importDump = '';
-	const localSnackbars = $snackbars;
 	let updateProfessionsButtonDisabled = false;
 
 	let focused = false;
-	let value: string | null = null;
 	let dirty = false;
 	let invalid = false;
-	$: disabled = focused || !value || !dirty || invalid;
 
 	function createSearchList(characters: Character[]) {
 		let itemList: UserRecipe[] = [];
@@ -116,6 +113,60 @@
 			}
 		}
 	}
+
+	const updateProgressAction: SubmitFunction = () => {
+		updateProfessionsButtonDisabled = true;
+		setTimeout(function () {
+			updateProfessionsButtonDisabled = false;
+		}, 5000);
+		return async ({ result }) => {
+			if (result.type === 'failure') {
+				if (result.status == 401) {
+					await goto('/login');
+				}
+
+				const message = result.data?.message ? result.data.message : 'Unknown Error';
+				openSnackbar($snackbars.error, message);
+				await applyAction(result);
+			} else if (result.type === 'success') {
+				const message = result.data?.message ? result.data.message : 'Update Succeeded';
+
+				openSnackbar($snackbars.success, message);
+
+				await applyAction(result);
+			}
+		};
+	};
+
+	const updateProfessionsAction: SubmitFunction = () => {
+		updateProfessionsButtonDisabled = true;
+		setTimeout(function () {
+			updateProfessionsButtonDisabled = false;
+		}, 5000);
+
+		return async ({ result }) => {
+			if (result.type === 'failure') {
+				if (result.status == 401) {
+					await signOut();
+					await goto('/login');
+				}
+				const message = result.data?.message ? result.data.message : 'Unknown Error';
+
+				openSnackbar($snackbars.error, message);
+
+				await applyAction(result);
+			}
+			if (result.type === 'success') {
+				const message = result.data?.message ? result.data.message : 'Update Succeeded';
+				if (data.user && result.data?.characters) {
+					data.user.characters = result.data.characters;
+				}
+				openSnackbar($snackbars.success, message);
+
+				await applyAction(result);
+			}
+		};
+	};
 </script>
 
 <div class="layout">
@@ -124,33 +175,7 @@
 			<div style="padding: 1rem;">
 				<h2 class="mdc-typography--headline6" style="margin: 0;">Upload your crafter data!</h2>
 			</div>
-			<form
-				use:enhance={() => {
-					updateProfessionsButtonDisabled = true;
-					setTimeout(function () {
-						updateProfessionsButtonDisabled = false;
-					}, 5000);
-					return async ({ result }) => {
-						if (result.type === 'failure') {
-							if (result.status == 401) {
-								await goto('/login');
-							}
-
-							const message = result.data?.message ? result.data.message : 'Unknown Error';
-							openSnackbar($snackbars.error, message);
-							await applyAction(result);
-						} else if (result.type === 'success') {
-							const message = result.data?.message ? result.data.message : 'Update Succeeded';
-
-							openSnackbar($snackbars.success, message);
-
-							await applyAction(result);
-						}
-					};
-				}}
-				method="POST"
-				action="?/updateProgress"
-			>
+			<form use:enhance={updateProgressAction} method="POST" action="?/updateProgress">
 				<input hidden name="profession-json" bind:value={importDump} />
 				<Textfield textarea bind:value={importDump}>
 					<input name="data" type="data" hidden bind:value={importDump} />
@@ -324,39 +349,7 @@
 					{/each}
 				</Accordion>
 			{/if}
-			<form
-				use:enhance={() => {
-					updateProfessionsButtonDisabled = true;
-					setTimeout(function () {
-						updateProfessionsButtonDisabled = false;
-					}, 5000);
-
-					return async ({ result }) => {
-						if (result.type === 'failure') {
-							if (result.status == 401) {
-								await signOut()
-								await goto('/login');
-							}
-							const message = result.data?.message ? result.data.message : 'Unknown Error';
-
-							openSnackbar($snackbars.error, message);
-
-							await applyAction(result);
-						}
-						if (result.type === 'success') {
-							const message = result.data?.message ? result.data.message : 'Update Succeeded';
-							if (data.user && result.data?.characters) {
-								data.user.characters = result.data.characters;
-							}
-							openSnackbar($snackbars.success, message);
-
-							await applyAction(result);
-						}
-					};
-				}}
-				method="POST"
-				action="?/updateProfessions"
-			>
+			<form use:enhance={updateProfessionsAction} method="POST" action="?/updateProfessions">
 				<Button
 					style="margin-top:19px"
 					bind:disabled={updateProfessionsButtonDisabled}

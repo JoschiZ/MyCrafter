@@ -11,8 +11,6 @@ export async function getProfessions(region: string, realmSlug: string, characte
         relevantItemsMap.set(item.recipe.recipeID, true)
     }
 
-    console.log(relevantItemsMap);
-    
     character = character.toLowerCase()
     const response = await fetch(`https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${character}/professions?namespace=profile-${region}&locale=en_US&access_token=${accessToken}`)
     if (!response.ok)
@@ -36,11 +34,7 @@ export async function getProfessions(region: string, realmSlug: string, characte
             }
 
             for (const rawRecipe of tier.known_recipes) {
-                console.log(rawRecipe.id);
-                
                 if (!relevantItemsMap.has(rawRecipe.id + "")) {
-                    console.log("skipped");
-                    
                     continue
                 }
                 const recipe = new UserRecipe()

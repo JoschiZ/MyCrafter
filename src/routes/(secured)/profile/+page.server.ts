@@ -1,13 +1,13 @@
-import type { Character, User } from '$db/user/UserModel';
+import type { Character } from '$db/user/UserModel';
 import UserModel from '$db/user/UserModel';
 import { getToken } from '$lib/server/middleware/authjs-helper';
 import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { getCharacters } from '$lib/server/bnetapi/getCharacters';
 import { getProfessions } from '$lib/server/bnetapi/getProfessions';
 import { updateCharacters, updateCharactersInUserDoc } from '$db/user/queries/updateCharacters';
 import logger from '$lib/server/logger';
-import { goto } from '$app/navigation';
+
 
 export const load = (async (event) => {
     const token = await getToken(event.cookies)
