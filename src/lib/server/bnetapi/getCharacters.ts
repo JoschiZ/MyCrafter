@@ -1,4 +1,5 @@
 import type {Character} from "$db/user/UserModel"
+import { MissingAuthorize } from "@auth/core/errors"
 
 export async function getCharacters(region: string, accessToken: string) {
     const response = await fetch(`https://${region}.api.blizzard.com/profile/user/wow?namespace=profile-${region}&locale=en_US&access_token=${accessToken}`)
@@ -30,6 +31,9 @@ export async function getCharacters(region: string, accessToken: string) {
                 allCharacters.push(character)
             }
         }
+    } else if (response.status === 401) {
+        // @ts-expect-error the calling signature actully excepts strings. This is a typing error
+        throw new MissingAuthorize("Access Token was invalid or API Access not authorized")
     }
     return allCharacters
 }

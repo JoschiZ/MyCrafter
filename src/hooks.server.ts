@@ -7,9 +7,8 @@ import type { Provider } from "@auth/core/providers";
 import { getCharacters } from "$lib/server/bnetapi/getCharacters";
 import UserModel from "$db/user/UserModel";
 import logger from "$lib/server/logger";
-import { setGlobalOptions } from "@typegoose/typegoose";
 
-setGlobalOptions({schemaOptions: {_id: false}})
+
 StartMongo().then(() => {
   logger.info("MongoDB Connected")
 }).catch((e) =>

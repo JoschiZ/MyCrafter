@@ -3,6 +3,7 @@
 	import { signIn } from '@auth/sveltekit/client';
 
 	import Card, { Media, Actions } from '@smui/card';
+	import { goto } from '$app/navigation';
 </script>
 
 <svelte:head>
@@ -38,7 +39,9 @@
 					{#each ['EU', 'US', 'KR', 'TW'] as region}
 						<Button
 							variant="raised"
-							on:click={() => signIn(`battlenet-${region.toLowerCase()}`)}
+							on:click={async () => {
+								await signIn(`battlenet-${region.toLowerCase()}`)
+							} }
 							class="login-button"
 							style="background-color: #148eff;"><Label>{region}</Label></Button
 						>

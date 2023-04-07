@@ -2,11 +2,12 @@ import type { Character, User } from '$db/user/UserModel';
 import UserModel from '$db/user/UserModel';
 import { getToken } from '$lib/server/middleware/authjs-helper';
 import type { Actions, PageServerLoad } from './$types';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { getCharacters } from '$lib/server/bnetapi/getCharacters';
 import { getProfessions } from '$lib/server/bnetapi/getProfessions';
 import { updateCharacters, updateCharactersInUserDoc } from '$db/user/queries/updateCharacters';
 import logger from '$lib/server/logger';
+import { goto } from '$app/navigation';
 
 export const load = (async (event) => {
     const token = await getToken(event.cookies)
@@ -18,7 +19,6 @@ export const load = (async (event) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-    //TODO: Test the rework of this Method. Does everything save correctlky?
     updateProgress: async (event) => {
         const formData = await event.request.formData()
         const data = formData.get("profession-json")
@@ -96,7 +96,7 @@ export const actions = {
         if (correctCharacterIndex == -1){
             return fail(400, {professions: data, message: "Could not identify the correct character to update"})
         }
-        console.log(user.characters[correctCharacterIndex])
+
         for (const profession of partialCharacter.professions) {
             const char = user.characters[correctCharacterIndex]
             if (char.professions == undefined){
@@ -132,7 +132,13 @@ export const actions = {
             return fail(400, { message: "Userdata Missing, try loging out and in again!" })
         }
 
-        const characters = await getCharacters(user.region, token.accessToken)
+        let characters: Awaited<ReturnType<typeof getCharacters>>
+        try {
+            characters = await getCharacters(user.region, token.accessToken)
+        } catch (error) {
+            return fail(401, {message:"Blizzard rejected your request. Please log in again."})
+        }
+
         user = await updateCharacters(characters, user.accountID)
 
         if (!user) {
@@ -143,7 +149,6 @@ export const actions = {
         for (const character of user.characters) {
 
             const professions = await getProfessions(user.region, character.realm.slug, character.name, token.accessToken)
-            console.log(professions);
 
             // If the character has no professions we can just overwrite/update that field. Way easier query
             if (!character.professions || character.professions.length == 0) {
@@ -219,10 +224,8 @@ export const actions = {
 
 
 
-        const update = await UserModel.updateOne(
-            {
-                _id: token?.sub
-            },
+        const update = await UserModel.findByIdAndUpdate(
+            token?.sub,
             {
                 $set: {
                     "characters.$[character].professions.$[profession].recipes.$[recipe].commission": commission
@@ -235,15 +238,11 @@ export const actions = {
                     { "recipe.recipeID": recipeID }
                 ]
             }).exec()
-        if (update.modifiedCount == 0) {
+        if (!update) {
             logger.warn("updateCommission failed")
             return fail(400, { commission: commission, message: "Update Failed, no data was changed" })
         }
 
         return { message: "Commission updated", commission: commission }
     },
-
-
-
-
 } satisfies Actions

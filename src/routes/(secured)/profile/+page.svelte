@@ -14,6 +14,7 @@
 	import Autocomplete from '@smui-extra/autocomplete';
 	import { goto } from '$app/navigation';
 	import GoldDisplay from '$lib/components/GoldDisplay.svelte';
+	import { signOut } from '@auth/sveltekit/client';
 	export let data: PageData;
 	let importDump = '';
 	const localSnackbars = $snackbars;
@@ -131,6 +132,10 @@
 					}, 5000);
 					return async ({ result }) => {
 						if (result.type === 'failure') {
+							if (result.status == 401) {
+								await goto('/login');
+							}
+
 							const message = result.data?.message ? result.data.message : 'Unknown Error';
 							openSnackbar($snackbars.error, message);
 							await applyAction(result);
@@ -328,6 +333,10 @@
 
 					return async ({ result }) => {
 						if (result.type === 'failure') {
+							if (result.status == 401) {
+								await signOut()
+								await goto('/login');
+							}
 							const message = result.data?.message ? result.data.message : 'Unknown Error';
 
 							openSnackbar($snackbars.error, message);

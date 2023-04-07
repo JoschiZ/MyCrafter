@@ -66,7 +66,7 @@ export class CharacterProfession {
     @prop({ type: () => [UserRecipe], _id: false }, PropType.ARRAY)
     recipes?: UserRecipe[]
 
-    @prop({ type: () => [ProfessionProgress], }, PropType.ARRAY)
+    @prop({ type: () => [ProfessionProgress], _id: false}, PropType.ARRAY)
     progress?: ProfessionProgress[]
 }
 
